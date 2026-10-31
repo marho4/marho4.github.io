@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#6e2022">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div style="max-width:1100px;margin:0 auto 10px"><a href="../" style="color:rgba(255,246,242,.8);font:600 .85rem system-ui,sans-serif;text-decoration:none;text-shadow:0 1px 6px rgba(0,0,0,.5)">&larr; Marvisaer</a></div>
+<title>Battlefront Loadout Roulette</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: planet backdrop with scenery silhouettes, translucent menu panels like the in-game loadout screen; mission bar, then one panel per co-op player, then pool and mission editors.
+   The look follows the mission being played (data-map on the root); default is the Rebellenlager dusk. Single dark look by design. */
+:root {
+  --sky-top: #b8606a;
+  --sky-mid: #d98a86;
+  --horizon: #8a4a40;
+  --ground: #3a1d18;
+  --deep: #1f0f0c;
+  --sun1: rgba(255,250,240,.95);
+  --sun2: rgba(255,180,150,.75);
+  --sil: #2a1210;
+  --panel: rgba(110, 32, 34, 0.78);
+  --panel-hi: rgba(150, 52, 52, 0.82);
+  --sunk: rgba(40, 10, 10, 0.38);
+  --field: rgba(20, 5, 5, 0.45);
+  --opt: #4a1618;
+  --panel-line: rgba(255, 220, 210, 0.18);
+  --ink: #fff6f2;
+  --ink-dim: rgba(255, 238, 230, 0.68);
+  --gold: #f2c230;
+  --p2: #8fd0ff;
+  --card: #f6efe6;
+  --card-ink: #3b1716;
+  --display: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+:root[data-map="tatooine"] {
+  --sky-top: #d98a3e; --sky-mid: #f2c27f; --horizon: #c98446; --ground: #7a4620; --deep: #2e1808;
+  --sun1: rgba(255,252,238,.95); --sun2: rgba(255,226,180,.8); --sil: #8a5228;
+  --panel: rgba(112, 56, 20, 0.8); --panel-hi: rgba(150, 82, 32, 0.85); --sunk: rgba(48, 22, 6, 0.4); --field: rgba(30, 12, 4, 0.48); --opt: #5a2c10;
+}
+:root[data-map="sullust"] {
+  --sky-top: #141010; --sky-mid: #2e2420; --horizon: #7a2e10; --ground: #22150f; --deep: #0b0705;
+  --sun1: rgba(255,110,30,.45); --sun2: rgba(255,170,60,.25); --sil: #0e0907;
+  --panel: rgba(42, 30, 26, 0.86); --panel-hi: rgba(70, 46, 36, 0.88); --sunk: rgba(10, 6, 4, 0.5); --field: rgba(6, 4, 3, 0.55); --opt: #2a1e1a;
+}
+:root[data-map="endor"] {
+  --sky-top: #20361f; --sky-mid: #5f7f42; --horizon: #3a5426; --ground: #1d2c14; --deep: #0b1208;
+  --sun1: rgba(246,240,190,.5); --sun2: rgba(220,236,170,.25); --sil: #0f1a0b;
+  --panel: rgba(28, 50, 22, 0.84); --panel-hi: rgba(46, 76, 34, 0.86); --sunk: rgba(8, 16, 6, 0.45); --field: rgba(4, 10, 3, 0.5); --opt: #1e3416;
+}
+:root[data-map="hoth"] {
+  --sky-top: #46637c; --sky-mid: #a9bfd0; --horizon: #c9d8e4; --ground: #e7eef4; --deep: #b3c4d2;
+  --sun1: rgba(255,255,255,.7); --sun2: rgba(255,255,255,0); --sil: #8ea6ba;
+  --panel: rgba(26, 46, 70, 0.86); --panel-hi: rgba(42, 70, 102, 0.88); --sunk: rgba(8, 18, 32, 0.45); --field: rgba(6, 14, 26, 0.55); --opt: #1c3048;
+}
+:root[data-map="eis"] {
+  --sky-top: #081626; --sky-mid: #1b4566; --horizon: #3b7da3; --ground: #6fb0d0; --deep: #183a52;
+  --sun1: rgba(160,228,255,.4); --sun2: rgba(160,228,255,0); --sil: #0a1828;
+  --panel: rgba(12, 36, 60, 0.86); --panel-hi: rgba(24, 60, 92, 0.88); --sunk: rgba(4, 14, 26, 0.45); --field: rgba(2, 10, 20, 0.55); --opt: #12304a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--body);
+  color: var(--ink);
+  background: var(--deep);
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  position: relative;
+}
+/* Backdrop on a fixed layer instead of background-attachment: fixed, which paints black on phones. */
+.sky {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 18%, var(--sun1) 0 58px, transparent 150px),
+    radial-gradient(circle at 34% 30%, var(--sun2) 0 34px, transparent 110px),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 52%, var(--horizon) 60%, var(--ground) 78%, var(--deep) 100%);
+}
+.scenery { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.scenery svg { width: 100%; height: 100%; display: block; }
+.panel, .chip { transition: background-color .5s ease; }
+.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+h1 {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase;
+  font-size: clamp(2rem, 5vw, 3.2rem); letter-spacing: .04em; line-height: .95; margin: 0;
+  text-shadow: 0 2px 18px rgba(80,10,10,.35); text-wrap: balance;
+}
+h1 small { display: block; font-size: .38em; font-weight: 600; letter-spacing: .28em; color: var(--ink-dim); margin-bottom: 6px; }
+.panel { background: var(--panel); border: 1px solid var(--panel-line); padding: 20px; position: relative; }
+.label { font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: .14em; font-size: .85rem; color: var(--ink-dim); }
+.dot { position: absolute; top: 18px; right: 18px; width: 14px; height: 14px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px rgba(242,194,48,.6); }
+.player.p2 .dot { background: var(--p2); box-shadow: 0 0 10px rgba(143,208,255,.6); }
+
+.mission { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; padding-block: 14px; }
+.mission .big { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+.mission .reroll { margin: 0; margin-left: auto; }
+.players { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.players.solo { grid-template-columns: 1fr; max-width: 640px; }
+@media (max-width: 860px) { .players { grid-template-columns: 1fr; } }
+.player { display: grid; gap: 14px; align-content: start; }
+.player-name { font: 800 1.3rem var(--display); letter-spacing: .16em; text-transform: uppercase; }
+.player.p1 .player-name { color: var(--gold); }
+.player.p2 .player-name { color: var(--p2); }
+.big {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase;
+  font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1; letter-spacing: .02em; margin: 4px 0 0;
+  min-height: 1em; overflow-wrap: anywhere;
+}
+.sub { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-dim); }
+.rolling .big { color: var(--ink-dim); }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.reroll {
+  background: none; border: 1px solid var(--panel-line); color: var(--ink-dim);
+  font: 600 .8rem var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 6px 12px; cursor: pointer;
+}
+.reroll:hover { color: var(--ink); border-color: var(--ink-dim); }
+
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+.star {
+  background: var(--card); color: var(--card-ink); border: 2px solid #d9b765; outline: 1px solid rgba(255,255,255,.6); outline-offset: -6px;
+  aspect-ratio: 3 / 3.4; max-width: 100%; display: grid; place-items: center; padding: 8px;
+}
+.star svg { width: 62%; height: auto; }
+.star-name { text-align: center; font: 700 .85rem/1.05 var(--display); text-transform: uppercase; letter-spacing: .06em; margin-top: 8px; overflow-wrap: anywhere; }
+.star-en { text-align: center; font-size: .72rem; color: var(--ink-dim); }
+
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.roll {
+  font-family: var(--display); font-weight: 800; font-size: 1.5rem; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--card-ink); background: var(--ink); border: 0; padding: 14px 40px; cursor: pointer;
+  clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  transition: background .15s, transform .1s;
+}
+.roll:hover { background: var(--gold); }
+.roll:active { transform: translateY(1px); }
+.roll:focus-visible, .reroll:focus-visible, .chip:focus-visible, .toggle input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 3px; }
+.hint { color: var(--ink-dim); font-size: .9rem; }
+kbd { font: 600 .8rem var(--display); border: 1px solid var(--panel-line); padding: 1px 6px; }
+
+.pool-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+.pool-head .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.chip {
+  font: 700 1.05rem var(--display); letter-spacing: .05em; text-transform: uppercase; text-align: left;
+  padding: 10px 12px; cursor: pointer; color: var(--ink);
+  background: var(--panel-hi); border: 1px solid var(--panel-line);
+  display: grid; gap: 4px;
+}
+.chip-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.chip svg { display: block; width: 100%; height: 54px; filter: drop-shadow(0 2px 3px rgba(30,5,5,.5)); }
+.chip.hit { background: var(--ink); color: var(--card-ink); }
+.chip.hit svg { filter: none; }
+.chip .tag { font-size: .75rem; letter-spacing: .1em; }
+.gun-big svg { display: block; width: 100%; max-width: 440px; height: auto; filter: drop-shadow(0 4px 8px rgba(30,5,5,.55)); }
+.chip.off svg { opacity: .3; }
+.chip.off { background: var(--sunk); color: rgba(255,238,230,.38); text-decoration: line-through; }
+.chip .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex: none; }
+.chip.off .pip { background: transparent; border: 1px solid rgba(255,238,230,.3); }
+@media (min-width: 980px) { .grid { grid-template-columns: repeat(6, 1fr); } }
+
+.lower { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .lower { grid-template-columns: 1fr; } }
+.toggle { display: flex; gap: 10px; align-items: center; cursor: pointer; margin-bottom: 12px; }
+.toggle input { position: absolute; opacity: 0; }
+.toggle span { width: 40px; height: 22px; background: var(--sunk); border: 1px solid var(--panel-line); position: relative; flex: none; }
+.toggle span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; background: var(--ink-dim); transition: left .15s; }
+.toggle input:checked + span { background: var(--gold); }
+.toggle input:checked + span::after { left: 21px; background: var(--card-ink); }
+.history { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.history li { display: grid; gap: 2px; font-size: .92rem; border-bottom: 1px solid var(--panel-line); padding-bottom: 6px; }
+.history li b { font-family: var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); font-size: .8rem; }
+.empty { color: var(--ink-dim); font-size: .9rem; }
+.field-label { display: block; font: 700 .8rem var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 6px; }
+.field {
+  width: 100%; background: var(--field); border: 1px solid var(--panel-line); color: var(--ink);
+  font: 500 .95rem var(--body); padding: 8px 10px; margin-bottom: 14px;
+}
+.field:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+select.field option { background: var(--opt); }
+footer { color: var(--ink-dim); font-size: .82rem; max-width: 65ch; background: var(--sunk); padding: 10px 12px; }
+h1, .hint { text-shadow: 0 2px 12px rgba(0,0,0,.45); }
+
+@keyframes pop { from { transform: scale(.94); opacity: .4; } to { transform: none; opacity: 1; } }
+.landed .big, .landed .star { animation: pop .28s ease-out; }
+@media (prefers-reduced-motion: reduce) { .landed .big, .landed .star { animation: none; } }
+</style>
+
+<div class="sky" aria-hidden="true"></div>
+<div class="scenery" id="scenery" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="bfM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdfbfa"/><stop offset=".45" stop-color="#d8d0cc"/><stop offset="1" stop-color="#8f8480"/></linearGradient><linearGradient id="bfD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a5452"/><stop offset=".6" stop-color="#2e1a18"/><stop offset="1" stop-color="#140707"/></linearGradient><linearGradient id="bfW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c0744a"/><stop offset=".6" stop-color="#82401f"/><stop offset="1" stop-color="#4a2010"/></linearGradient></defs></svg>
+<div class="wrap">
+  <header>
+    <h1><small>Star Wars Battlefront · Co-op</small>Loadout Roulette</h1>
+    <div class="cta-row">
+      <span class="hint">Press <kbd>Space</kbd> to roll</span>
+      <button class="roll" id="roll">Roll</button>
+    </div>
+  </header>
+
+  <section class="panel mission" id="mPanel" hidden>
+    <div class="label">Mission</div>
+    <div class="big" id="mName">Tatooine</div>
+    <div class="sub" id="mSub">Überleben · 15 Wellen</div>
+    <button class="reroll" id="rerollM">Reroll map</button>
+  </section>
+
+  <section class="players" id="players" aria-live="polite"></section>
+
+  <section class="panel">
+    <div class="pool-head">
+      <div class="label" id="poolLabel">Blaster pool · tap to include or exclude</div>
+      <div class="actions">
+        <button class="reroll" id="allOn">Include all</button>
+        <button class="reroll" id="allOff">Exclude all</button>
+      </div>
+    </div>
+    <div class="grid" id="pool"></div>
+  </section>
+
+  <section class="lower">
+    <div class="panel">
+      <div class="label" style="margin-bottom:12px">Last rolls</div>
+      <ul class="history" id="history"></ul>
+      <p class="empty" id="histEmpty">Your rolls show up here.</p>
+    </div>
+    <div class="panel">
+      <div class="label" style="margin-bottom:12px">Options</div>
+      <label class="field-label" for="optPlayers">Players</label>
+      <select class="field" id="optPlayers"><option value="2">2 players (co-op)</option><option value="1">1 player</option></select>
+      <label class="field-label" for="optMapMode">Mission</label>
+      <select class="field" id="optMapMode"></select>
+      <label class="toggle"><input type="checkbox" id="optDistinct" checked><span></span>Each player gets a different blaster</label>
+      <label class="toggle"><input type="checkbox" id="optRepeat" checked><span></span>Avoid repeating your last blaster</label>
+    </div>
+  </section>
+
+
+  <footer>Your options are saved in this browser. Each Survival (Überleben) mission has its own fixed star card hands, and both players pick from the hands of the mission you play. The page takes on the look of that mission.</footer>
+</div>
+
+<script>
+// In-game order of the blaster menu.
+const WEAPONS = ["DLT-19","DH-17","RT-97C","A280C","E-11","CA-87","T-21","SE-14C","EE-3","T-21B","DL-44","DL-18","DLT-19X","Relby-V10","DT-12","X-8","EE-4","TL-50","K-16 Bryar","DT-29","A180","CJ-9 Bo-Gewehr"];
+
+// Drawing recipe per blaster, modeled on the real-world guns the film props were built from.
+// r = receiver, b = barrel, m = muzzle, s = stock, g = grip, mag = magazine, sc = scope.
+const SPEC = {
+  "DLT-19": { r: { w: 46, h: 13 }, b: { len: 80, t: 9, style: "jacket" }, m: "ring", s: { len: 40, style: "solid" }, g: { pos: 12 }, sc: { off: 6, len: 34 }, bipod: 62 },
+  "DH-17": { r: { w: 40, h: 12, style: "perf" }, b: { len: 12, t: 6 }, m: "ring", g: { pos: 4, len: 17 }, mag: { pos: 22, style: "side" } },
+  "RT-97C": { r: { w: 52, h: 15 }, b: { len: 56, t: 8, style: "fins" }, m: "flash", s: { len: 38, style: "solid" }, g: { pos: 18 }, mag: { pos: 42, style: "drum" }, sc: { off: 8, len: 40 }, bipod: 44 },
+  "A280C": { r: { w: 50, h: 13 }, b: { len: 46, t: 6, style: "fins" }, m: "ring", s: { len: 36, style: "solid" }, g: { pos: 12 }, mag: { pos: 30, style: "curved" }, sc: { off: 6, len: 40 } },
+  "E-11": { r: { w: 52, h: 12, style: "perf" }, b: { len: 12, t: 6 }, m: "ring", s: { len: 44, style: "fold" }, g: { pos: 16 }, mag: { pos: 8, style: "side" }, sc: { off: 14, len: 30 } },
+  "CA-87": { r: { w: 44, h: 15 }, b: { len: 34, t: 12, style: "fins" }, m: "flare", s: { len: 36, style: "wood" }, g: { pos: 10, style: "wood" } },
+  "T-21": { r: { w: 40, h: 13 }, b: { len: 70, t: 14, style: "fat" }, m: "ring", s: { len: 38, style: "wood" }, g: { pos: 10, style: "wood" }, sc: { off: 4, len: 42 } },
+  "SE-14C": { r: { w: 34, h: 12 }, b: { len: 14, t: 6 }, m: "ring", g: { pos: 3, len: 18 }, sc: { off: 4, len: 26 } },
+  "EE-3": { r: { w: 30, h: 14 }, b: { len: 30, t: 10 }, m: "flare", s: { len: 48, style: "wire" }, g: { pos: 4, style: "wood", len: 18 }, sc: { off: 2, len: 42 } },
+  "T-21B": { r: { w: 40, h: 13 }, b: { len: 62, t: 11, style: "fat" }, m: "flash", s: { len: 38, style: "solid" }, g: { pos: 10 }, sc: { off: 2, len: 56 } },
+  "DL-44": { r: { w: 30, h: 13 }, b: { len: 22, t: 6 }, m: "flash", g: { pos: 0, style: "wood", len: 18 }, mag: { pos: 17, style: "front" }, sc: { off: 0, len: 34 } },
+  "DL-18": { r: { w: 28, h: 12 }, b: { len: 26, t: 5 }, m: "ring", g: { pos: 0, style: "wood", len: 18 }, mag: { pos: 16, style: "front" } },
+  "DLT-19X": { r: { w: 46, h: 12 }, b: { len: 92, t: 8, style: "jacket" }, m: "flash", s: { len: 42, style: "solid" }, g: { pos: 12 }, sc: { off: 2, len: 66 } },
+  "Relby-V10": { r: { w: 40, h: 15 }, b: { len: 22, t: 8 }, m: "bulb", s: { len: 40, style: "wood" }, g: { pos: 6, style: "wood" }, mag: { pos: 30, style: "drum" } },
+  "DT-12": { r: { w: 36, h: 15 }, b: { len: 18, t: 9, style: "fins" }, m: "flash", g: { pos: 3, len: 18 } },
+  "X-8": { r: { w: 32, h: 12 }, b: { len: 46, t: 5 }, m: "flash", g: { pos: 3, len: 18 }, sc: { off: 2, len: 52 } },
+  "EE-4": { r: { w: 40, h: 13 }, b: { len: 36, t: 7, style: "fins" }, m: "ring", s: { len: 34, style: "skel" }, g: { pos: 8 }, mag: { pos: 26, style: "curved" }, sc: { off: 4, len: 34 } },
+  "TL-50": { r: { w: 60, h: 17 }, b: { len: 54, t: 13, style: "fat" }, m: "flare", s: { len: 34, style: "solid" }, g: { pos: 22 }, mag: { pos: 46, style: "drum" }, bipod: 40 },
+  "K-16 Bryar": { r: { w: 30, h: 12 }, b: { len: 38, t: 6 }, m: "ring", g: { pos: 2, len: 19 } },
+  "DT-29": { r: { w: 38, h: 15 }, b: { len: 16, t: 10, style: "fins" }, m: "flare", g: { pos: 3, len: 18 }, sc: { off: 6, len: 26 } },
+  "A180": { r: { w: 34, h: 13 }, b: { len: 18, t: 7, style: "fins" }, m: "ring", g: { pos: 3, len: 17 }, mag: { pos: 20, style: "box" }, sc: { off: 6, len: 22 } },
+  "CJ-9 Bo-Gewehr": { r: { w: 44, h: 11 }, b: { len: 84, t: 5 }, fore: { len: 40 }, m: "flash", s: { len: 46, style: "skel" }, g: { pos: 10 }, sc: { off: 0, len: 70 } }
+};
+
+const MT = "url(#bfM)", DK = "url(#bfD)", WD = "url(#bfW)", HL = "rgba(255,255,255,.55)", SH = "#2a1414", STEEL = "#bdb3ae";
+
+function gun(name) {
+  const p = SPEC[name] || SPEC["A280C"];
+  const C = 40;
+  let mn = 1e9, mx = -1e9, s = "";
+  const E = (a, b) => { mn = Math.min(mn, a); mx = Math.max(mx, b); };
+  const R = (x, y, w, h, f, a = "") => { E(x, x + w); return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" ${a}/>`; };
+  const r = p.r, h = r.h, top = C - h / 2, bx = r.w, b = p.b, t = b.t;
+
+  if (p.s) {
+    const L = p.s.len, st = p.s.style;
+    if (st === "solid" || st === "wood") {
+      E(-L, 0);
+      s += `<path d="M0 ${top + 2} L${-L} ${C - 4} L${-L} ${C + 13} Q${-L + 4} ${C + 15} ${-L + 9} ${C + 13} L0 ${C + 5} Z" fill="${st === "wood" ? WD : DK}"/>`;
+      s += R(-L, C - 4, 3, 17, SH, 'rx="1"');
+    }
+    if (st === "skel" || st === "wire") {
+      E(-L, 0);
+      s += `<path d="M0 ${top + 3} L${-L} ${C - 3} L${-L} ${C + 12} M${-L} ${C + 11} L0 ${C + 4}" stroke="${STEEL}" stroke-width="${st === "wire" ? 2 : 3.2}" fill="none" stroke-linecap="round"/>`;
+      s += R(-L - 1, C - 4, 4, 17, DK, 'rx="1.5"');
+    }
+    if (st === "fold") s += R(2, top - 4, L, 2.5, STEEL) + R(L, top - 9, 3.5, 9, DK, 'rx="1"');
+  }
+
+  if (p.fore) s += R(bx - 4, C - 1, p.fore.len, 7, p.fore.wood ? WD : DK, 'rx="2"');
+
+  const g = p.g || {}, gx = g.pos ?? r.w * 0.3, gl = g.len ?? 15;
+  s += `<path d="M${gx} ${C + 3} L${gx + 10} ${C + 3} L${gx + 5} ${C + 3 + gl} Q${gx} ${C + 5 + gl} ${gx - 5} ${C + 2 + gl} Z" fill="${g.style === "wood" ? WD : DK}"/>`;
+  s += `<path d="M${gx + 10} ${C + 5} L${gx + 10} ${C + 11} Q${gx + 11} ${C + 13} ${gx + 14} ${C + 13} L${gx + 18} ${C + 13} Q${gx + 20} ${C + 12} ${gx + 20} ${C + 9} L${gx + 20} ${C + 5}" stroke="${SH}" stroke-width="1.8" fill="none"/>`;
+  s += `<path d="M${gx + 14} ${C + 5} q1 4 -1 6" stroke="${SH}" stroke-width="1.5" fill="none"/>`;
+
+  const m = p.mag;
+  if (m) {
+    const x = m.pos;
+    if (m.style === "curved") s += `<path d="M${x} ${C + 4} L${x + 9} ${C + 4} Q${x + 12} ${C + 14} ${x + 16} ${C + 20} L${x + 8} ${C + 23} Q${x + 4} ${C + 15} ${x} ${C + 4} Z" fill="${DK}"/>`;
+    if (m.style === "box") s += R(x, C + 4, 9, 13, DK, 'rx="1"');
+    if (m.style === "front") s += R(x, C + 4, 12, 10, MT, 'rx="1"') + R(x + 2, C + 7, 8, 1.2, SH);
+    if (m.style === "drum") s += `<circle cx="${x}" cy="${C + 10}" r="9" fill="${DK}"/><circle cx="${x}" cy="${C + 10}" r="3" fill="${MT}"/>`;
+  }
+
+  let bEnd;
+  if (b.style === "jacket") {
+    s += R(bx, C - 1.5, b.len + 6, 3, MT) + R(bx, C - t / 2, b.len, t, MT, 'rx="1"');
+    for (let x = bx + 5; x < bx + b.len - 4; x += 7) s += `<ellipse cx="${x}" cy="${C}" rx="2.4" ry="${t / 2 - 2}" fill="${SH}"/>`;
+    bEnd = bx + b.len + 6;
+  } else if (b.style === "fat") {
+    s += R(bx, C - t / 2, b.len, t, MT, 'rx="3"');
+    for (let x = bx + 3; x < bx + b.len - 2; x += 4) s += R(x, C - t / 2 + 1.5, 1.2, t - 3, "rgba(42,20,20,.5)");
+    s += R(bx + b.len, C - 2, 6, 4, MT);
+    bEnd = bx + b.len + 6;
+  } else {
+    s += R(bx, C - t / 2, b.len, t, MT) + R(bx, C - t / 2 + 1, b.len, 1, HL);
+    if (b.style === "fins") for (let x = bx + 4; x < bx + b.len - 3; x += 5) s += R(x, C - t / 2 - 2, 2.5, t + 4, DK);
+    bEnd = bx + b.len;
+  }
+
+  s += R(0, top, r.w, h, MT, `rx="${r.style === "perf" ? h / 2 : 2}"`) + R(2, top + 1, r.w - 4, 1.2, HL);
+  if (r.style === "perf") for (let x = 6; x < r.w - 4; x += 5.5) s += `<circle cx="${x}" cy="${C + 1}" r="1.5" fill="${SH}"/>`;
+  else s += R(4, C - 1, r.w - 8, 2, SH, 'opacity=".55"') + `<circle cx="${r.w - 5}" cy="${top + 3.5}" r="1.2" fill="${SH}"/><circle cx="5" cy="${top + 3.5}" r="1.2" fill="${SH}"/>`;
+  if (m && m.style === "side") s += R(m.pos, C - 3, 14, 7, DK, 'rx="1"');
+
+  const mz = p.m;
+  if (mz === "ring") s += R(bEnd, C - t / 2 - 1.5, 4, t + 3, DK, 'rx="1"');
+  if (mz === "flash") { E(bEnd, bEnd + 8); s += `<path d="M${bEnd} ${C - t / 2} L${bEnd + 8} ${C - t / 2 - 2.5} L${bEnd + 8} ${C + t / 2 + 2.5} L${bEnd} ${C + t / 2} Z" fill="${DK}"/>`; }
+  if (mz === "flare") s += R(bEnd, C - t / 2 - 3, 6, t + 6, DK, 'rx="1"');
+  if (mz === "bulb") {
+    E(bEnd, bEnd + 27);
+    s += R(bEnd, C - 2.5, 5, 5, DK) + `<circle cx="${bEnd + 16}" cy="${C}" r="11" fill="${MT}"/><circle cx="${bEnd + 16}" cy="${C}" r="11" fill="none" stroke="${SH}" stroke-width="1.5"/><ellipse cx="${bEnd + 13}" cy="${C - 4}" rx="4" ry="2.5" fill="${HL}"/>`;
+  }
+
+  if (p.sc) {
+    const x = p.sc.off, L = p.sc.len, y = top - 10;
+    s += R(x + 6, y + 6, 3, 5, SH) + R(x + L - 10, y + 6, 3, 5, SH);
+    s += R(x, y + 1, L, 6, DK, 'rx="3"') + R(x - 2, y - 0.5, 7, 9, DK, 'rx="2"') + R(x + L - 6, y - 1.5, 8, 11, DK, 'rx="2"');
+    s += R(x + L + 1, y, 1.6, 8, "#c9484a") + R(x + 2, y + 2, L - 6, 1, "rgba(255,255,255,.35)");
+  }
+
+  if (p.bipod) {
+    const x = bx + p.bipod;
+    s += `<path d="M${x} ${C + 3} L${x - 8} ${C + 22} M${x} ${C + 3} L${x + 8} ${C + 22}" stroke="${STEEL}" stroke-width="2.4" stroke-linecap="round"/>`;
+  }
+
+  const W = mx - mn, k = Math.min(1, 228 / W), dx = 120 - (mn + W / 2) * k;
+  return `<svg viewBox="0 0 240 80" role="img" aria-label="${name}"><g transform="translate(${dx} ${40 - 40 * k}) scale(${k})">${s}</g></svg>`;
+}
+
+const ICONS = {
+  impact: '<svg viewBox="0 0 64 64"><circle cx="32" cy="36" r="20" fill="#3b1716"/><rect x="24" y="8" width="16" height="10" fill="#3b1716"/><circle cx="32" cy="36" r="8" fill="#f6efe6"/><circle cx="32" cy="36" r="3" fill="#b8323a"/></svg>',
+  shield: '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="none" stroke="#c9a23c" stroke-width="7"/><path d="M32 16v32M20 22c4 2 8 2 12 0 4 2 8 2 12 0v12c0 8-6 13-12 15-6-2-12-7-12-15z" fill="none" stroke="#c9a23c" stroke-width="3"/></svg>',
+  thermal: '<svg viewBox="0 0 64 64"><circle cx="32" cy="34" r="22" fill="#3b1716"/><rect x="10" y="31" width="44" height="6" fill="#6d4a46"/><rect x="26" y="29" width="5" height="10" fill="#d23a3a"/><rect x="33" y="29" width="5" height="10" fill="#d23a3a"/></svg>',
+  barrage: '<svg viewBox="0 0 64 64"><g fill="#3b1716"><rect x="8" y="14" width="18" height="14" rx="3"/><rect x="38" y="14" width="18" height="14" rx="3"/><rect x="23" y="38" width="18" height="14" rx="3"/></g></svg>',
+  scan: '<svg viewBox="0 0 64 64" fill="none" stroke="#c9a23c" stroke-width="5"><circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="14"/><circle cx="32" cy="32" r="4" fill="#c9a23c"/></svg>',
+  pistol: '<svg viewBox="0 0 64 64"><path d="M6 22h44v-6h6v14H34l-4 4h-6l-4 18H10l4-20H6z" fill="#3b1716"/><rect x="20" y="10" width="22" height="5" fill="#3b1716"/></svg>'
+};
+
+const GOLD = "#c9a23c", INK = "#3b1716", MID = "#6d4a46", ION = "#3a8fd8";
+const ring = inner => `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="none" stroke="${GOLD}" stroke-width="5"/>${inner}</svg>`;
+ICONS.generic = ring(`<polygon points="32,16 36,28 49,28 39,36 43,49 32,41 21,49 25,36 15,28 28,28" fill="${GOLD}"/>`);
+ICONS.jump = `<svg viewBox="0 0 64 64"><rect x="15" y="8" width="13" height="34" rx="5" fill="${INK}"/><rect x="36" y="8" width="13" height="34" rx="5" fill="${INK}"/><rect x="26" y="14" width="12" height="20" fill="${MID}"/><path d="M17 44h9l-4.5 13zM38 44h9l-4.5 13z" fill="#e0782a"/></svg>`;
+ICONS.ionshot = ring(`<path d="M36 12 L22 35 h9 l-3 17 l14 -25 h-9z" fill="${GOLD}"/>`);
+ICONS.iontorp = `<svg viewBox="0 0 64 64"><rect x="4" y="26" width="46" height="12" rx="3" fill="${INK}"/><rect x="18" y="38" width="7" height="12" fill="${INK}"/><rect x="12" y="19" width="16" height="7" fill="${MID}"/><path d="M50 23 l11 9 l-11 9z" fill="${ION}"/></svg>`;
+ICONS.cycler = `<svg viewBox="0 0 64 64"><rect x="4" y="28" width="58" height="5" fill="${INK}"/><path d="M4 30 L18 30 L20 43 L7 43z" fill="#8a4a2c"/><rect x="22" y="21" width="22" height="6" rx="2" fill="${INK}"/><rect x="26" y="33" width="4" height="10" fill="${INK}"/></svg>`;
+ICONS.focus = ring(`<circle cx="32" cy="32" r="11" fill="none" stroke="${GOLD}" stroke-width="3"/><path d="M32 14v10M32 40v10M14 32h10M40 32h10" stroke="${GOLD}" stroke-width="3"/><circle cx="32" cy="32" r="3" fill="${GOLD}"/>`);
+ICONS.bowcaster = `<svg viewBox="0 0 64 64"><rect x="8" y="30" width="48" height="6" fill="${INK}"/><path d="M42 12 Q30 33 42 54" stroke="${INK}" stroke-width="4" fill="none"/><path d="M42 12 L42 54" stroke="${MID}" stroke-width="1.5"/><rect x="14" y="36" width="7" height="13" fill="#8a4a2c"/><circle cx="56" cy="33" r="3.5" fill="${ION}"/></svg>`;
+ICONS.iongrenade = `<svg viewBox="0 0 64 64"><circle cx="32" cy="35" r="20" fill="${INK}"/><rect x="12" y="32" width="40" height="6" fill="${ION}"/><rect x="27" y="9" width="10" height="7" fill="${MID}"/></svg>`;
+ICONS.cooling = ring(`<path d="M32 15v34M17 23l30 18M17 41l30-18" stroke="${GOLD}" stroke-width="3.5" stroke-linecap="round"/>`);
+ICONS.explosive = ring(`<polygon points="32,13 36,25 48,18 41,30 52,34 40,38 45,50 34,42 30,53 27,41 15,46 22,36 12,30 24,28 19,17 30,24" fill="${GOLD}"/>`);
+
+// Keys are card names lower-cased without spaces or hyphens, so "Kontaktgranate" and "Kontakt-Granate" both match.
+const norm = s => s.toLowerCase().replace(/[\s-]/g, "");
+const CARD_ICON = {
+  kontaktgranate: "impact", "körperschild": "shield", thermaldetonator: "thermal", sperrfeuer: "barrage", scanimpuls: "scan", scoutpistole: "pistol",
+  sprungpack: "jump", ionenschuss: "ionshot", ionentorpedo: "iontorp", cyclergewehr: "cycler", "feuerbündeln": "focus", armbrust: "bowcaster",
+  ionengranate: "iongrenade", "kühlzelle": "cooling", explosiverschuss: "explosive"
+};
+const CARD_EN = {
+  kontaktgranate: "Impact Grenade", "körperschild": "Personal Shield", thermaldetonator: "Thermal Detonator", sperrfeuer: "Barrage", scanimpuls: "Scan Pulse", scoutpistole: "Scout Blaster",
+  sprungpack: "Jump Pack", ionenschuss: "Ion Shot", ionentorpedo: "Ion Torpedo", cyclergewehr: "Cycler Rifle", "feuerbündeln": "Focus Fire", armbrust: "Bowcaster",
+  ionengranate: "Ion Grenade", "kühlzelle": "Cooling Cell", explosiverschuss: "Explosive Shot"
+};
+
+// Co-op Survival ("Überleben") missions; theme picks the page look.
+const DEFAULT_MAPS = [
+  { id: "tat", name: "Tatooine", theme: "tatooine" },
+  { id: "sul", name: "Sullust", theme: "sullust" },
+  { id: "end", name: "Endor", theme: "endor" },
+  { id: "hoth", name: "Hoth", theme: "hoth" },
+  { id: "eis", name: "Eishöhle", theme: "eis" },
+  { id: "reb", name: "Rebellenlager", theme: "rebel" }
+];
+const MAP_SUB = "Überleben · 15 Wellen";
+
+// owner: "all" = either player may get it, "0" = only player 1, "1" = only player 2.
+const H = (id, map, name, cards) => ({ id, map, name, owner: "all", cards });
+const DEFAULT_HANDS = [
+  H("tat-1", "tat", "Plünderer", ["Sprungpack", "Ionenschuss", "Sperrfeuer"]),
+  H("tat-2", "tat", "Vernichter", ["Sprungpack", "Körperschild", "Ionentorpedo"]),
+  H("sul-1", "sul", "Meisterschütze", ["Sprungpack", "Ionenschuss", "Cyclergewehr"]),
+  H("sul-2", "sul", "Soldat", ["Sprungpack", "Feuer bündeln", "Ionentorpedo"]),
+  H("end-1", "end", "Pirscher", ["Armbrust", "Körperschild", "Ionentorpedo"]),
+  H("end-2", "end", "Halunke", ["Sprungpack", "Ionenschuss", "Ionengranate"]),
+  H("hoth-1", "hoth", "Überlebender", ["Armbrust", "Ionenschuss", "Kontakt-Granate"]),
+  H("hoth-2", "hoth", "Schütze", ["Sperrfeuer", "Kühlzelle", "Thermal-Detonator"]),
+  H("eis-1", "eis", "Überlebender", ["Sprungpack", "Scan-Impuls", "Thermal-Detonator"]),
+  H("eis-2", "eis", "Zerstörer", ["Sperrfeuer", "Explosiver Schuss", "Kontakt-Granate"]),
+  H("reb-1", "reb", "Grenadier", ["Kontakt-Granate", "Körperschild", "Thermal-Detonator"]),
+  H("reb-2", "reb", "Jäger", ["Sperrfeuer", "Scan-Impuls", "Scout-Pistole"])
+];
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("bflr:" + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("bflr:" + k, JSON.stringify(v)); } catch {} }
+};
+
+// Excluded blasters are saved (not included ones), so blasters added to the list later start out included.
+let enabled = new Set(WEAPONS.filter(w => !store.get("disabled", []).includes(w)));
+const saveEnabled = () => store.set("disabled", WEAPONS.filter(w => !enabled.has(w)));
+
+// Missions and hands are fixed; they can't be edited on the page.
+const maps = DEFAULT_MAPS;
+const hands = DEFAULT_HANDS;
+const isMap = id => maps.some(x => x.id === id);
+const mapById = id => maps.find(x => x.id === id) || maps[0];
+let history = store.get("history3", []);
+let mapMode = String(store.get("mapMode", "roll"));
+if (mapMode !== "roll" && mapMode !== "off" && !isMap(mapMode)) mapMode = "roll";
+const opt = {
+  players: Number(store.get("players", 2)) === 1 ? 1 : 2,
+  distinct: store.get("optDistinct", true),
+  noRepeat: store.get("optRepeat", true)
+};
+let current = {
+  m: isMap(mapMode) ? mapMode : maps[0].id,
+  p: [{ w: "DLT-19", h: null }, { w: "A280C", h: null }]
+};
+let rolling = false;
+
+const $ = id => document.getElementById(id);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const handById = id => hands.find(h => h.id === id);
+const mapsOn = () => mapMode !== "off";
+const handsFor = (m, i) => hands.filter(h => (h.owner === "all" || Number(h.owner) === i) && (!mapsOn() || h.map === m));
+const PNAME = ["Player 1", "Player 2"];
+
+// Seeded random so each planet's scenery looks the same every time.
+function rng(seed) { return () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }; }
+
+function scenery(theme) {
+  const r = rng(theme.length * 977 + 13);
+  let s = "";
+  const ridge = (base, amp, step, op) => {
+    let d = `M0 800 L0 ${base}`;
+    for (let x = 0; x <= 1200; x += step) d += ` L${x} ${base - r() * amp}`;
+    return `<path d="${d} L1200 800 Z" fill="var(--sil)" opacity="${op}"/>`;
+  };
+  const dunes = (base, amp, op) => {
+    let d = `M0 800 L0 ${base}`;
+    for (let x = 0; x < 1200; x += 300) d += ` Q${x + 150} ${base - amp - r() * amp} ${x + 300} ${base - r() * 20}`;
+    return `<path d="${d} L1200 800 Z" fill="var(--sil)" opacity="${op}"/>`;
+  };
+  if (theme === "tatooine" || theme === "rebel") {
+    s += dunes(560, 40, .45) + dunes(640, 50, .8);
+    if (theme === "rebel") [880, 930, 1010].forEach((x, i) => {
+      const h = 70 + i * 12;
+      s += `<rect x="${x}" y="${600 - h}" width="6" height="${h}" fill="var(--sil)"/><rect x="${x - 10}" y="${600 - h + 14}" width="26" height="5" fill="var(--sil)"/><circle cx="${x + 3}" cy="${600 - h}" r="6" fill="var(--sil)"/>`;
+    });
+  } else if (theme === "hoth") {
+    s += ridge(470, 120, 60, .55) + ridge(560, 70, 45, .35);
+  } else if (theme === "eis") {
+    for (let x = 0; x < 1200; x += 30 + r() * 40) {
+      const w = 20 + r() * 50, h = 60 + r() * 200;
+      s += `<path d="M${x} 0 L${x + w} 0 L${x + w / 2} ${h} Z" fill="var(--sil)" opacity="${.6 + r() * .4}"/>`;
+    }
+    s += ridge(690, 90, 35, .85);
+  } else if (theme === "endor") {
+    for (let i = 0; i < 16; i++) {
+      const x = r() * 1200, w = 16 + r() * 50, op = .45 + r() * .5;
+      s += `<rect x="${x}" y="0" width="${w}" height="800" fill="var(--sil)" opacity="${op}"/>`;
+    }
+    s += ridge(700, 50, 40, .9);
+  } else if (theme === "sullust") {
+    s += ridge(520, 140, 50, .9);
+    let d = "M0 720";
+    for (let x = 0; x <= 1200; x += 60) d += ` L${x} ${700 + r() * 40}`;
+    s += `<path d="${d}" stroke="#ff6a1a" stroke-width="4" fill="none" opacity=".8"/><path d="${d}" stroke="#ff9a3a" stroke-width="14" fill="none" opacity=".18"/>`;
+    s += ridge(760, 30, 40, 1);
+  }
+  return `<svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMax slice">${s}</svg>`;
+}
+
+function applyTheme() {
+  const theme = mapsOn() ? mapById(current.m).theme : "rebel";
+  if (document.documentElement.dataset.map === theme) return;
+  document.documentElement.dataset.map = theme;
+  $("scenery").innerHTML = scenery(theme);
+}
+
+function buildPlayers() {
+  const box = $("players");
+  box.classList.toggle("solo", opt.players === 1);
+  box.innerHTML = "";
+  for (let i = 0; i < opt.players; i++) {
+    const el = document.createElement("div");
+    el.className = `panel player p${i + 1}`;
+    el.innerHTML = `<div class="dot"></div>
+      <div class="player-name">${PNAME[i]}</div>
+      <div><div class="label">Blaster</div><div class="gun-big" id="wImg${i}"></div><div class="big" id="wName${i}"></div></div>
+      <div><div class="label">Star card hand</div><div class="big" id="hName${i}"></div><div class="cards" id="hCards${i}"></div></div>
+      <div class="btns"><button class="reroll" id="rerollW${i}">Reroll blaster</button><button class="reroll" id="rerollH${i}">Reroll hand</button></div>`;
+    box.appendChild(el);
+    $("rerollW" + i).onclick = () => spin({ only: i, w: true });
+    $("rerollH" + i).onclick = () => spin({ only: i, h: true });
+    renderWeapon(i, current.p[i].w);
+    renderHand(i, current.p[i].h);
+  }
+}
+
+function renderWeapon(i, w) {
+  $("wName" + i).textContent = w;
+  $("wImg" + i).innerHTML = gun(w);
+}
+
+function renderHand(i, id) {
+  const h = handById(id);
+  if (!h) { $("hName" + i).textContent = "No hand"; $("hCards" + i).innerHTML = '<p class="empty">This mission has no hand for this player yet. Add one under Missions below.</p>'; return; }
+  $("hName" + i).textContent = `"${h.name}"`;
+  $("hCards" + i).innerHTML = h.cards.map(c => {
+    const k = norm(c.trim());
+    const icon = ICONS[CARD_ICON[k]] || ICONS.generic;
+    return `<div><div class="star">${icon}</div><div class="star-name">${esc(c || "Empty")}</div><div class="star-en">${esc(CARD_EN[k] || "")}</div></div>`;
+  }).join("");
+}
+
+function renderMap(m) { $("mName").textContent = mapById(m).name; $("mSub").textContent = MAP_SUB; }
+
+function renderPool() {
+  const pool = $("pool");
+  pool.innerHTML = "";
+  WEAPONS.forEach(w => {
+    const owners = current.p.slice(0, opt.players).map((p, i) => p.w === w ? "P" + (i + 1) : "").filter(Boolean);
+    const b = document.createElement("button");
+    b.className = "chip" + (owners.length ? " hit" : "") + (enabled.has(w) ? "" : " off");
+    b.id = "w-" + w.replace(/\W/g, "");
+    b.setAttribute("aria-pressed", enabled.has(w));
+    b.innerHTML = `${gun(w)}<span class="chip-row"><span>${w}</span>${owners.length ? `<span class="tag">${owners.join(" ")}</span>` : '<span class="pip"></span>'}</span>`;
+    b.onclick = () => { enabled.has(w) ? enabled.delete(w) : enabled.add(w); saveEnabled(); renderPool(); };
+    pool.appendChild(b);
+  });
+}
+
+function renderHistory() {
+  $("history").innerHTML = history.map(r =>
+    `<li><b>${r.m ? esc(r.m) : "Any mission"}</b>${r.p.map((p, i) => `<span>P${i + 1}: ${esc(p.w)} · ${esc(p.h)}</span>`).join("")}</li>`).join("");
+  $("histEmpty").hidden = history.length > 0;
+}
+
+function landed() {
+  const r = $("players");
+  r.classList.remove("landed"); void r.offsetWidth; r.classList.add("landed");
+}
+
+// opts: { only: player index or undefined (= everyone), w, h, m }
+function spin(opts) {
+  if (rolling) return;
+  const idx = opts.only === undefined ? [...Array(opt.players).keys()] : [opts.only];
+  if (opts.w && enabled.size === 0) { idx.forEach(i => { $("wName" + i).textContent = "Pool empty"; }); return; }
+  const rollMap = opts.m && mapMode === "roll";
+  const m = rollMap ? pick(maps).id : current.m;
+  const target = { m, p: current.p.map(p => ({ ...p })) };
+  const taken = new Set(current.p.slice(0, opt.players).map(p => p.w));
+  const plan = [];
+  for (let i = 0; i < opt.players; i++) {
+    const mine = idx.includes(i);
+    let needW = mine && opts.w, needH = mine && opts.h;
+    const pool = handsFor(m, i);
+    if (!pool.some(h => h.id === current.p[i].h)) needH = true;
+    if (needW) {
+      taken.delete(current.p[i].w);
+      let list = [...enabled];
+      if (opt.noRepeat && list.length > 1) list = list.filter(w => w !== current.p[i].w);
+      if (opt.distinct && opt.players > 1) { const free = list.filter(w => !taken.has(w)); if (free.length) list = free; }
+      target.p[i].w = pick(list);
+      taken.add(target.p[i].w);
+    }
+    if (needH) target.p[i].h = pool.length ? pick(pool).id : null;
+    plan.push({ i, needW, needH, pool });
+  }
+  rolling = true;
+  const steps = reduced ? 1 : 16;
+  let n = 0;
+  $("players").classList.add("rolling");
+  const tick = () => {
+    n++;
+    const done = n >= steps;
+    plan.forEach(({ i, needW, needH, pool }) => {
+      if (needW) renderWeapon(i, done ? target.p[i].w : pick([...enabled]));
+      if (needH) renderHand(i, done || !pool.length ? target.p[i].h : pick(pool).id);
+    });
+    if (rollMap) renderMap(done ? m : pick(maps).id);
+    if (!done) { setTimeout(tick, 40 + n * n * 1.1); return; }
+    current = target;
+    rolling = false;
+    $("players").classList.remove("rolling");
+    landed();
+    applyTheme();
+    renderPool();
+    history.unshift({
+      m: mapsOn() ? mapById(current.m).name : null,
+      p: current.p.slice(0, opt.players).map(p => ({ w: p.w, h: handById(p.h)?.name || "No hand" }))
+    });
+    history = history.slice(0, 6);
+    store.set("history3", history);
+    renderHistory();
+  };
+  tick();
+}
+
+// Keep each player's hand valid for the current mission without animating.
+function fixHands() {
+  for (let i = 0; i < 2; i++) {
+    const pool = handsFor(current.m, i);
+    if (!pool.some(h => h.id === current.p[i].h)) current.p[i].h = pool.length ? pick(pool).id : null;
+  }
+}
+
+function applyOptions() {
+  $("mPanel").hidden = !mapsOn();
+  $("rerollM").hidden = mapMode !== "roll";
+  if (isMap(mapMode)) current.m = mapMode;
+  if (!isMap(current.m)) current.m = maps[0].id;
+  renderMap(current.m);
+  applyTheme();
+  fixHands();
+  buildPlayers();
+  renderPool();
+}
+
+function renderMapOptions() {
+  $("optMapMode").innerHTML = `<option value="roll">Roll a random mission</option>` +
+    maps.map(mp => `<option value="${mp.id}">Playing ${esc(mp.name)}</option>`).join("") + `<option value="off">Don't use missions</option>`;
+  $("optMapMode").value = mapMode;
+}
+
+renderMapOptions();
+
+$("roll").onclick = () => spin({ w: true, h: true, m: true });
+$("rerollM").onclick = () => spin({ m: true });
+$("allOn").onclick = () => { enabled = new Set(WEAPONS); saveEnabled(); renderPool(); };
+$("allOff").onclick = () => { enabled = new Set(); saveEnabled(); renderPool(); };
+$("optPlayers").value = String(opt.players);
+$("optDistinct").checked = opt.distinct;
+$("optRepeat").checked = opt.noRepeat;
+$("optMapMode").onchange = e => { mapMode = e.target.value; store.set("mapMode", mapMode); applyOptions(); };
+$("optPlayers").onchange = e => { opt.players = Number(e.target.value); store.set("players", opt.players); applyOptions(); };
+$("optDistinct").onchange = e => { opt.distinct = e.target.checked; store.set("optDistinct", opt.distinct); };
+$("optRepeat").onchange = e => { opt.noRepeat = e.target.checked; store.set("optRepeat", opt.noRepeat); };
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && !["BUTTON", "INPUT", "SELECT"].includes(document.activeElement.tagName)) { e.preventDefault(); $("roll").click(); }
+});
+
+applyOptions();
+renderHistory();
+</script>
+</body>
+</html>
